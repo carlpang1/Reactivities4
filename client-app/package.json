@@ -12,6 +12,8 @@
     "@types/react-dom": "^17.0.11",
     "axios": "^0.26.0",
     "fomantic-ui": "^2.9.0-beta.236",
+    "mobx": "^6.4.2",
+    "mobx-react-lite": "^3.3.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "5.0.0",
