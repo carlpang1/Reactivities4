@@ -6,6 +6,8 @@ using Application.Activities;
 using Application.Core;
 using AutoMapper;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +21,7 @@ namespace API.Extension
         public static IServiceCollection AddApplicationServices(this IServiceCollection services,
             IConfiguration config)
         {
+
             services.AddCors(opt =>
             {
                 opt.AddPolicy("CorsPolicy", policy =>
@@ -32,14 +35,16 @@ namespace API.Extension
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
             });
 
-            services.AddDbContext<DataContext>(opt =>
-            {
-                opt.UseSqlite(config.GetConnectionString("DefaultConnection"));
-            });
-
             services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 
+            services.AddDbContext<DataContext>(opt =>
+                       {
+                           opt.UseSqlite(config.GetConnectionString("DefaultConnection"));
+                       });
+
             services.AddMediatR(typeof(List.Handler).Assembly);
+
+            services.AddScoped<IUserAccessor, UserAccessor>();
 
             return services;
         }
