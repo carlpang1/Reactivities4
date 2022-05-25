@@ -1,79 +1,53 @@
-import { ErrorMessage, Field, Formik, Form } from "formik";
+import { Formik, Form } from "formik";
 import { observer } from "mobx-react-lite";
-import React, { ChangeEvent, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import { Button, FormField, Header, Label, Segment } from "semantic-ui-react";
+import { Button, Header, Segment } from "semantic-ui-react";
 import { v4 as uuid } from "uuid";
 import LoadingComponent from "../../../app/layout/LoadingComponent";
 import { useStore } from "../../../app/stores/store";
 import * as Yup from "yup";
-import { format } from "date-fns";
 import MyTextInput from "../../../app/common/forms/MyTextInput";
 import MyTextArea from "../../../app/common/forms/MyTextArea";
 import MySelectInput from "../../../app/common/forms/MySelectInput";
 import { categoryOptions } from "../../../app/common/options/categoryOption";
 import MyDateInput from "../../../app/common/forms/MyDateInput";
-import { Activity } from "../../../app/models/activity";
+import { ActivityFormValues } from "../../../app/models/activity";
+import { history } from "../../..";
 
 export default observer(function ActivityForm() {
-  const navigate = useNavigate();
   const { activityStore } = useStore();
-  const {
-    loading,
-    loadingInitial,
-    loadActivity,
-    createActivity,
-    updateActivity,
-  } = activityStore;
-  const { id } = useParams<{ id: string }>();
+  const { loadingInitial, loadActivity, createActivity, updateActivity } =
+    activityStore;
 
-  const [activity, setActivity] = useState<Activity>({
-    id: "",
-    title: "",
-    category: "",
-    description: "",
-    date: null,
-    city: "",
-    venue: "",
-  });
+  const { id } = useParams<{ id: string }>();
+  const [activity, setActivity] = useState<ActivityFormValues>(
+    new ActivityFormValues()
+  );
 
   useEffect(() => {
-    if (id) loadActivity(id).then((activity) => setActivity(activity!));
-    else
-      setActivity({
-        id: "",
-        title: "",
-        category: "",
-        description: "",
-        date: null,
-        city: "",
-        venue: "",
-      });
+    if (id)
+      loadActivity(id).then((activity) =>
+        setActivity(new ActivityFormValues(activity))
+      );
   }, [id, loadActivity]);
 
-  // function handleSubmit() {
-  //   if (activity.id.length === 0) {
-  //     let newActivity = { ...activity, id: uuid() };
-  //     createActivity(newActivity).then(() => {
-  //       navigate(`/activities/${newActivity.id}`);
-  //     });
-  //   } else {
-  //     updateActivity(activity).then(() => {
-  //       navigate(`/activities/${activity.id}`);
-  //     });
-  //   }
-  // }
-
-  // function handleInputChange(
-  //   event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  // ) {
-  //   const { name, value } = event.target;
-  //   setActivity({ ...activity, [name]: value });
-  // }
-
-  function handleFormSubmit(activity: Activity) {}
+  function handleFormSubmit(activity: ActivityFormValues) {
+    if (!activity.id) {
+      let newActivity = {
+        ...activity,
+        id: uuid(),
+      };
+      createActivity(newActivity).then(() =>
+        history.push(`/activities/${newActivity.id}`)
+      );
+    } else {
+      updateActivity(activity).then(() =>
+        history.push(`/activities/${activity.id}`)
+      );
+    }
+  }
 
   const validationSchema = Yup.object({
     title: Yup.string().required("The activity title is required"),
@@ -112,10 +86,11 @@ export default observer(function ActivityForm() {
               dateFormat="MMM d, yyyy h:mm aa"
             />
             <Header content="Location Details" sub color="teal" />
+            <MyTextInput name="city" placeholder="City" />
             <MyTextInput name="venue" placeholder="Venue" />
             <Button
               disabled={isSubmitting || !isValid || !dirty}
-              loading={loading}
+              loading={isSubmitting}
               floated="right"
               positive
               type="submit"
