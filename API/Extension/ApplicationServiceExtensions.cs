@@ -4,7 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Application.Activities;
 using Application.Core;
+using Application.Interfaces;
+using Application.Photos;
 using AutoMapper;
+using Infrastructure.Photos;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -45,6 +48,10 @@ namespace API.Extension
             services.AddMediatR(typeof(List.Handler).Assembly);
 
             services.AddScoped<IUserAccessor, UserAccessor>();
+
+            services.AddScoped<IPhotoAccessor, PhotoAccessor>();
+
+            services.Configure<CloudinarySetting>(config.GetSection("Cloudinary"));
 
             return services;
         }
